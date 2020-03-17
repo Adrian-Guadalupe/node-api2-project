@@ -3,7 +3,7 @@ const Posts = require('../data/db.js')
 
 const router = express.Router()
 
-// POST
+// POST *
 router.post('/', (req, res) => {
    const { title, contents } = req.body
 
@@ -26,7 +26,7 @@ router.post('/', (req, res) => {
       })
 })
 
-// POST
+// POST *
 router.post('/:id/comments', (req, res) => {
    const { post_id, text } = req.body
 
@@ -52,12 +52,12 @@ router.post('/:id/comments', (req, res) => {
       })
 })
 
-// GET
+// GET *
 router.get('/', (req, res) => {
    Posts.find(req.query)
-      .then((posts => {
-         res.json(200).json(posts)
-      }))
+      .then(posts => {
+         res.status(200).json(posts)
+      })
       .catch(err => {
          console.log(err)
          res.status(500).json({
@@ -66,17 +66,17 @@ router.get('/', (req, res) => {
       })
 })
 
-// GET
+// GET *
 router.get('/:id', (req, res) => {
    const { id } = req.params
 
    Posts.findById(id)
       .then(post => {
-         post ? res.status(200).json(hub) :
-
-         res.status(404).json({ 
-            message: 'The post with the specified ID does not exist.' 
-         })
+         post 
+            ?  res.status(200).json(post) 
+            :  res.status(404).json({ 
+                  message: 'The post with the specified ID does not exist.' 
+               })
       })
       .catch(err => {
          console.log(err)
@@ -86,17 +86,17 @@ router.get('/:id', (req, res) => {
       })
 })
 
-// GET
+// GET *
 router.get('/:id/comments', (req, res) => {
    const { id } = req.params
    
    Posts.findPostComments(id)
       .then(post => {
-         post ? res.status(200).json(hub) :
-
-         res.status(404).json({ 
-            message: 'The post with the specified ID does not exist.' 
-         })         
+         post 
+            ?  res.status(200).json(post) 
+            :  res.status(404).json({ 
+                  message: 'The post with the specified ID does not exist.' 
+               })         
       })
       .catch(err => {
          console.log(err)
@@ -106,44 +106,43 @@ router.get('/:id/comments', (req, res) => {
       })
 })
 
-// DELETE
+// DELETE *
 router.delete('/:id', (req, res) => {
    const { id } = req.params
    
    Posts.findById(id)
       .then(post => {
-         post ? 
-
-         Posts.remove(id)
-            .then(deleted => {
-               if (deleted) {
-                  console.log(deleted)
-                  res.status(204).json(post)
-               } else {
-                  res.status(500).json({
-                     error: 'The post could not be removed'
-                   });
-               }
-            })
-            .catch(err => {
-               console.log(err)
-               res.status(500).json({
-                  error: 'The post could not be removed'
-                });
-            })
+         post 
+            ?  Posts.remove(id)
+                  .then(deleted => {
+                     if (deleted) {
+                        res.status(200).json(post)
+                     } 
+                  })
+                  .catch(err => {
+                     console.log(err)
+                     res.status(500).json({
+                        error: 'The post could not be removed'
+                     });
+                  })
          
-         :
-
-         res.status(404).json({
-            message: 'The post with the specified ID does not exist.'
-         })
+            :  res.status(404).json({
+                  message: 'The post with the specified ID does not exist.'
+               })
+      })
+      .catch(err => {
+         console.log(err)
+         res.status(500).json({
+            error: 'The post information could not be retrieved.'
+         });
       })
 })
 
-// PUT
+// PUT *
 router.put('/:id', (req, res) => {
    const changes = req.body
-   const { id, title, contents } = changes
+   const { title, contents } = req.body
+   const { id } = req.params
 
    !(title && contents) ?
    res.status(400).json({
@@ -160,7 +159,6 @@ router.put('/:id', (req, res) => {
          res.status(404).json({ message: 'The post with the specified ID does not exist.' })
       })
       .catch(err => {
-         // log error to database
          console.log(err);
          res.status(500).json({
             error: 'The post information could not be modified.'
